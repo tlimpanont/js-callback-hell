@@ -1,15 +1,12 @@
 import {Meteor} from 'meteor/meteor';
 let mongoose = require('mongoose');
-let userSchema, User, db;
+let userSchema = mongoose.Schema({name: String});
+let User = mongoose.model('users', userSchema);
 
 function connectToMongooseDB() {
     return new Promise(function (resolve, reject) {
         mongoose.connect('mongodb://localhost:3001/local');
-        userSchema = mongoose.Schema({
-            name: String
-        });
-        User = mongoose.model('users', userSchema);
-        db = mongoose.connection;
+        let db = mongoose.connection;
         db.on('error', function (error) {
             reject(error);
         });
@@ -55,7 +52,7 @@ function findAllUsers() {
 }
 
 function meteorStartUp() {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         Meteor.startup(function () {
             resolve();
         });
@@ -63,15 +60,19 @@ function meteorStartUp() {
 }
 
 /** ACTION FLOWS FROM TOP TO BOTTOM **/
-meteorStartUp()
-    .then(connectToMongooseDB)
-    .then(removeAllUsers)
-    .then(insertTestUsers)
-    .then(findAllUsers)
-    .then(function(users) {
-        console.log(users);
+Promise.all([
+    meteorStartUp(),
+    connectToMongooseDB(),
+    removeAllUsers(),
+    insertTestUsers(),
+    findAllUsers()
+])
+    .then(function ([meteorStartup, db, removeUsers, insertedUsers, allUsers]) {
+        console.log("dbHost: ", db.host);
+        console.log("dbPort: ", db.port);
+        console.log("allUsers: ", allUsers);
     })
-    .catch(function(error) {
+    .catch(function (error) {
         console.error("error from promise catch: ", error);
     });
 /** END FLOWS FROM TOP TO BOTTOM **/
