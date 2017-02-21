@@ -1,5 +1,10 @@
 import {Meteor} from 'meteor/meteor';
 let mongoose = require('mongoose');
+/**
+ * The node function should conform to node.js convention of accepting a callback as last argument and calling that callback
+ * with error as the first argument and success value on the second argument.
+ */
+let Promise = require('bluebird');
 let userSchema, User, db;
 
 function connectToMongooseDB() {
@@ -20,38 +25,20 @@ function connectToMongooseDB() {
 }
 
 function removeAllUsers() {
-    return new Promise(function (resolve, reject) {
-        User.remove({}, function (err, users) {
-            if (err) {
-                reject(err);
-            }
-            resolve(users)
-        });
-    });
+    return Promise.promisify(User.remove)
+        .call(User, {});
 }
 
 function insertTestUsers() {
-    return new Promise(function (resolve, reject) {
-        let theuy = new User({name: "Theuy Limpanont"});
-        let hans = new User({name: "Hans Kramer"});
-        User.collection.insert([theuy, hans], function (err, result) {
-            if (err) {
-                reject(err);
-            }
-            resolve(result)
-        });
-    });
+    let theuy = new User({name: "Theuy Limpanont"});
+    let hans = new User({name: "Hans Kramer"});
+    return Promise.promisify(User.collection.insert)
+        .call(User.collection, [theuy, hans]);
 }
 
 function findAllUsers() {
-    return new Promise(function (resolve, reject) {
-        User.find({}, function (err, users) {
-            if (err) {
-                reject(err);
-            }
-            resolve(users)
-        });
-    });
+    return Promise.promisify(User.find)
+        .call(User, {});
 }
 
 function meteorStartUp() {
