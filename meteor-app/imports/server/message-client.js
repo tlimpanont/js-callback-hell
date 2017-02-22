@@ -1,3 +1,5 @@
+import * as Rx from "rxjs/Rx";
+
 let socket = require('engine.io-client')('ws://localhost:3002');
 let socketInMeteorEnv = {
     on: Meteor.wrapAsync(socket.on, socket),
@@ -6,15 +8,26 @@ let socketInMeteorEnv = {
 
 export class MessageClient {
 
-    static connect() {
+    static connect$() {
 
-        return new Promise(function (resolve, reject) {
+        return new Rx.Observable(function (observer) {
             socketInMeteorEnv.on("open", function () {
-                resolve(socketInMeteorEnv);
+                observer.next(socketInMeteorEnv);
             });
 
             socketInMeteorEnv.on("error", function (err) {
-                reject(err);
+                observer.error(err);
+            });
+        });
+    }
+
+    static onMessage$() {
+        let connect$ = MessageClient.connect$();
+        return connect$.mergeMap(function (socket) {
+            return new Rx.Observable(function (observer) {
+                socket.on("message", function (_message) {
+                    observer.next(_message);
+                });
             });
         });
     }
