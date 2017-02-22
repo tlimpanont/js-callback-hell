@@ -63,15 +63,14 @@ function meteorStartUp() {
 }
 
 /** ACTION FLOWS FROM TOP TO BOTTOM **/
-meteorStartUp()
-    .then(connectToMongooseDB)
-    .then(removeAllUsers)
-    .then(insertTestUsers)
-    .then(findAllUsers)
-    .then(function(users) {
-        console.log(users);
-    })
-    .catch(function(error) {
-        console.error("error from promise catch: ", error);
-    });
+(async function() {
+    await meteorStartUp();
+    await connectToMongooseDB();
+    await removeAllUsers();
+    let insertedUsers = await insertTestUsers();
+    console.log("insertedIds: ", insertedUsers.insertedIds);
+    let allUsers = await findAllUsers();
+    console.log("all users: " + JSON.stringify(allUsers, null, 4));
+})();
+
 /** END FLOWS FROM TOP TO BOTTOM **/
