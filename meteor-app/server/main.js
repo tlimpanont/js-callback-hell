@@ -3,7 +3,6 @@ import {MessagingServer} from '/imports/server/messaging-server';
 import {MessageClient} from '/imports/server/message-client';
 import {UsersMessageListener} from '/imports/server/users-message-listener';
 
-/* CALLBACK #1 */
 Meteor.startup(function () {
     MessagingServer.start();
     UsersMessageListener.subscribe(function (data) {
